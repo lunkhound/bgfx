@@ -191,7 +191,58 @@ class Cubes : public entry::AppI
 					bgfx::setIndexBuffer(m_ibh);
 
 					// Set render states.
-					bgfx::setState(BGFX_STATE_DEFAULT);
+                    /*
+                    Using 3 combinations of BGFX_STATE_DEPTH_* flags triggers a fatal error in debug builds on DX11.
+
+                    When compiled in Debug / Win32 configuration I get a fatal error message
+
+                    "Interface ref count 2, hash 74b241b3."
+
+                    with the following callstack:
+
+                    example-01-cubesDebug.exe!bgfx::CallbackStub::fatal(bgfx::Fatal::Enum _code, const char * _str) Line 81	C++
+                    example-01-cubesDebug.exe!bgfx::fatal(bgfx::Fatal::Enum _code, const char * _format, ...) Line 337	C++
+                    example-01-cubesDebug.exe!bgfx::StateCacheT<ID3D11DepthStencilState>::add(unsigned __int64 _key, ID3D11DepthStencilState * _value) Line 111	C++
+                    example-01-cubesDebug.exe!bgfx::d3d11::RendererContextD3D11::setDepthStencilState(unsigned __int64 _state, unsigned __int64 _stencil) Line 2645	C++
+                    example-01-cubesDebug.exe!bgfx::d3d11::RendererContextD3D11::submit(bgfx::Frame * _render, bgfx::ClearQuad & _clearQuad, bgfx::TextVideoMemBlitter & _textVideoMemBlitter) Line 5176	C++
+                    example-01-cubesDebug.exe!bgfx::Context::renderFrame() Line 1453	C++
+                    example-01-cubesDebug.exe!bgfx::renderFrame() Line 948	C++
+                    example-01-cubesDebug.exe!bgfx::Context::renderThread(void * __formal) Line 2098	C++
+                    example-01-cubesDebug.exe!bx::Thread::entry() Line 194	C++
+                    example-01-cubesDebug.exe!bx::Thread::threadFunc(void * _arg) Line 201	C++
+                    [External Code]
+                    */
+                    if ( yy == 0 )
+                    {
+                        bgfx::setState( BGFX_STATE_RGB_WRITE |
+                                        BGFX_STATE_ALPHA_WRITE |
+                                        //BGFX_STATE_DEPTH_TEST_LESS|
+                                        //BGFX_STATE_DEPTH_WRITE |
+                                        BGFX_STATE_MSAA |
+                                        0
+                                        );
+
+                    }
+                    else if ( yy == 1 )
+                    {
+                        bgfx::setState( BGFX_STATE_RGB_WRITE |
+                                        BGFX_STATE_ALPHA_WRITE |
+                                        //BGFX_STATE_DEPTH_TEST_LESS|
+                                        BGFX_STATE_DEPTH_WRITE |
+                                        BGFX_STATE_MSAA |
+                                        0
+                                        );
+                    }
+                    else
+                    {
+                        bgfx::setState( BGFX_STATE_RGB_WRITE |
+                                        BGFX_STATE_ALPHA_WRITE |
+                                        BGFX_STATE_DEPTH_TEST_LESS |
+                                        BGFX_STATE_DEPTH_WRITE |
+                                        BGFX_STATE_MSAA |
+                                        0
+                                        );
+                    }
 
 					// Submit primitive for rendering to view 0.
 					bgfx::submit(0, m_program);
